@@ -1,0 +1,41 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "air: hot reload",
+            "type": "shell",
+            "command": "air",
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "message": 4
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^\\[.*\\] building\\.\\.\\.$",
+                    "endsPattern": "^\\[.*\\] running\\.\\.\\.$|Starting server"
+                }
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            }
+        },
+        {
+            "label": "stop air",
+            "type": "shell",
+            "command": "pkill -f './tmp/main' || true",
+            "presentation": {
+                "reveal": "silent"
+            }
+        }
+    ]
+}

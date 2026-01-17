@@ -1,0 +1,22 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -gcflags='all=-N -l' -o ./tmp/main ."
+  bin = "./tmp/main"
+  full_bin = "dlv exec --headless --continue --listen=:2345 --api-version=2 --accept-multiclient ./tmp/main -- serve --port 8080"
+  include_ext = ["go"]
+  exclude_dir = ["tmp", "vendor"]
+  delay = 1000
+
+[log]
+  time = false
+
+[color]
+  main = "magenta"
+  watcher = "cyan"
+  build = "yellow"
+  runner = "green"
+
+[misc]
+  clean_on_exit = true

@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug init",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "args": [
+                "init"
+            ],
+            "env": {},
+            "showLog": true
+        },
+        {
+            "name": "Debug serve",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "args": [
+                "serve"
+            ],
+            "env": {},
+            "showLog": true
+        }
+    ]
+}
