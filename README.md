@@ -28,7 +28,7 @@ docker run highcard/hsm:latest -v $PWD:/data download
 
 ## Usage - Single User Mode
 
-### Step 1: Login to Hytale
+### Login to Hytale
 
 ```bash
 hsm login
@@ -36,7 +36,7 @@ hsm login
 
 This will open your browser to log in with your Hytale account.
 
-### Step 2: Download the Server
+###  Download the Server
 
 **With Binary:**
 ```bash
@@ -55,7 +55,28 @@ docker run -it --rm \
 
 The server files will be downloaded and extracted to your current folder.
 
-### Step 3: Get Game Session (for running the server)
+## Usage - Game Hosting providers
+
+### Authentication
+
+For Game Hosting Providers it is highly recommended to deploy HSM as a service to your infrastructure.
+To manage the retrieval of game sessions, download URLs and anything else, a JWKS/JWT authentication flow can be used.
+HSM Service will automatically secure every endpoint when you run it with the `--jwks-endpoint` flag (e.g., `hsm serve --jwks-endpoint https://your-auth-server/.well-known/jwks.json`).
+
+For an example, take a look at the [hosted-auth example](examples/hosted-auth).
+
+**This works very well with Kubernetes Service accounts too and is the way how it is used at druid.gg**
+
+### No Authentication
+If you disable authentication, make sure the service is not reachable from the outside world or by any entity (including your customers).
+Otherwise someone can generate unlimited game sessions through your account.
+Depending on your setup, authentication can be omitted if the customer does not have enough permission to abuse the session generation.
+This highly depends on your exact setup!
+
+Checkout the no-auth [hosted-no-auth example](examples/hosted-no-auth). 
+
+
+### Start Service
 
 **With Docker:**
 ```bash
@@ -70,7 +91,18 @@ docker run -it --rm \
 hsm serve
 ```
 
-Then in another terminal, get your session tokens:
+When no session.json is found, use the link in the console to authenticate yourself.
+
+### Retreive download url for latest game version
+
+```bash
+curl -X POST http://localhost:8080/download
+```
+
+Returns a presigned URL for the serverfile archive.
+
+
+### Get Game Session
 
 ```bash
 curl -X POST http://localhost:8080/game-session
@@ -78,20 +110,6 @@ curl -X POST http://localhost:8080/game-session
 
 This gives you the tokens needed to start your Hytale server.
 
-## Usage - Game Hosting providers
+### REST API
 
-### Authentication
-
-For Game Hosting Providers it is highly recommended to deploy HSM as a service to your infrastructure.
-To manage the retrieval of game sessions, download URLs and anything else, a JWKS/JWT authentication flow can be used.
-HSM Service will automatically secure every endpoint when you run it with the `--jwks-endpoint` flag (e.g., `hsm serve --jwks-endpoint https://your-auth-server/.well-known/jwks.json`).
-For an example, take a look at the [hosted-auth example](examples/hosted-auth).
-
-**This works very well with Kubernetes Service accounts too and is the way how it is used at druid.gg**
-
-### No Authentication
-If you disable authentication, make sure the service is not reachable from the outside world or by any entity (including your customers).
-Otherwise someone can generate unlimited game sessions through your account.
-Depending on your setup, authentication can be omitted if the customer does not have enough permission to abuse the session generation.
-This highly depends on your exact setup!
-Checkout the no-auth [hosted-no-auth example](examples/hosted-no-auth). 
+TODO: Readme
