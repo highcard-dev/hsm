@@ -1,4 +1,4 @@
-.PHONY: build clean run test fmt lint vet tidy
+.PHONY: build clean run test fmt lint lint-install vet tidy
 
 # Binary name
 BINARY_NAME=hsm
@@ -59,9 +59,13 @@ fmt:
 vet:
 	$(GOVET) ./...
 
+# Install golangci-lint
+lint-install:
+	curl -sSfL https://golangci-lint.run/install.sh | sh -s v2.8.0
+
 # Lint (requires golangci-lint)
 lint:
-	golangci-lint run
+	./bin/golangci-lint run
 
 # Tidy dependencies
 tidy:
@@ -86,6 +90,7 @@ help:
 	@echo "  fmt          - Format code"
 	@echo "  vet          - Run go vet"
 	@echo "  lint         - Run golangci-lint"
+	@echo "  lint-install - Install golangci-lint"
 	@echo "  tidy         - Tidy dependencies"
 	@echo "  deps         - Download dependencies"
 	@echo "  install      - Install binary to GOPATH/bin"

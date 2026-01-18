@@ -25,27 +25,27 @@ var loginCmd = &cobra.Command{
 		}
 
 		if stdoutFlag {
-			fmt.Fprintln(os.Stdout, "")
-			fmt.Fprintln(os.Stdout, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-			fmt.Fprintln(os.Stdout, "                        Session Created")
-			fmt.Fprintln(os.Stdout, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-			fmt.Fprintln(os.Stdout, "")
-			fmt.Fprintf(os.Stdout, "  Access Token:   %s\n", session.AccessToken)
+			_, _ = fmt.Fprintln(os.Stdout, "")
+			_, _ = fmt.Fprintln(os.Stdout, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+			_, _ = fmt.Fprintln(os.Stdout, "                        Session Created")
+			_, _ = fmt.Fprintln(os.Stdout, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+			_, _ = fmt.Fprintln(os.Stdout, "")
+			_, _ = fmt.Fprintf(os.Stdout, "  Access Token:   %s\n", session.AccessToken)
 			if session.RefreshToken != "" {
-				fmt.Fprintf(os.Stdout, "  Refresh Token:  %s\n", session.RefreshToken)
+				_, _ = fmt.Fprintf(os.Stdout, "  Refresh Token:  %s\n", session.RefreshToken)
 			}
 			if session.TokenType != "" {
-				fmt.Fprintf(os.Stdout, "  Token Type:     %s\n", session.TokenType)
+				_, _ = fmt.Fprintf(os.Stdout, "  Token Type:     %s\n", session.TokenType)
 			}
 			if session.Scope != "" {
-				fmt.Fprintf(os.Stdout, "  Scope:          %s\n", session.Scope)
+				_, _ = fmt.Fprintf(os.Stdout, "  Scope:          %s\n", session.Scope)
 			}
 			if !session.ExpiresAt.IsZero() {
-				fmt.Fprintf(os.Stdout, "  Expires At:     %s\n", session.ExpiresAt.Format("2006-01-02 15:04:05 MST"))
+				_, _ = fmt.Fprintf(os.Stdout, "  Expires At:     %s\n", session.ExpiresAt.Format("2006-01-02 15:04:05 MST"))
 			}
-			fmt.Fprintln(os.Stdout, "")
-			fmt.Fprintln(os.Stdout, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-			fmt.Fprintln(os.Stdout, "")
+			_, _ = fmt.Fprintln(os.Stdout, "")
+			_, _ = fmt.Fprintln(os.Stdout, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+			_, _ = fmt.Fprintln(os.Stdout, "")
 		} else {
 			// Save session to JSON file
 			sessionPath := GetSessionLocation()

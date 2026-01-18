@@ -78,8 +78,8 @@ func (h *SessionHandler) CreateEnv(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("HYTALE_SERVER_SESSION_TOKEN=\"" + session.SessionToken + "\"\n"))
-	w.Write([]byte("HYTALE_SERVER_IDENTITY_TOKEN=\"" + session.IdentityToken + "\"\n"))
+	_, _ = w.Write([]byte("HYTALE_SERVER_SESSION_TOKEN=\"" + session.SessionToken + "\"\n"))
+	_, _ = w.Write([]byte("HYTALE_SERVER_IDENTITY_TOKEN=\"" + session.IdentityToken + "\"\n"))
 }
 
 // Get returns the current session (multi-user only)

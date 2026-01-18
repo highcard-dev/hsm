@@ -76,7 +76,7 @@ func downloadAndExtract(url, dest string) error {
 	if err != nil {
 		return fmt.Errorf("request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("unexpected status: %d", resp.StatusCode)
@@ -88,15 +88,15 @@ func downloadAndExtract(url, dest string) error {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
 	tempPath := tempFile.Name()
-	defer os.Remove(tempPath)
+	defer func() { _ = os.Remove(tempPath) }()
 
 	// Stream download to temp file (constant memory usage)
 	written, err := io.Copy(tempFile, resp.Body)
 	if err != nil {
-		tempFile.Close()
+		_ = tempFile.Close()
 		return fmt.Errorf("failed to download: %w", err)
 	}
-	tempFile.Close()
+	_ = tempFile.Close()
 
 	fmt.Printf("Downloaded %.2f MB\n", float64(written)/(1024*1024))
 
@@ -106,7 +106,7 @@ func downloadAndExtract(url, dest string) error {
 	if err != nil {
 		return fmt.Errorf("failed to open zip: %w", err)
 	}
-	defer zipReader.Close()
+	defer func() { _ = zipReader.Close() }()
 
 	for _, f := range zipReader.File {
 		if err := extractZipFile(f, dest); err != nil {
@@ -140,14 +140,14 @@ func extractZipFile(f *zip.File, dest string) error {
 	if err != nil {
 		return fmt.Errorf("failed to open zip entry: %w", err)
 	}
-	defer rc.Close()
+	defer func() { _ = rc.Close() }()
 
 	// Create the destination file
 	outFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}
-	defer outFile.Close()
+	defer func() { _ = outFile.Close() }()
 
 	// Stream from zip entry to output file
 	if _, err := io.Copy(outFile, rc); err != nil {

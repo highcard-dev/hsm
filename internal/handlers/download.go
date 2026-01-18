@@ -61,7 +61,7 @@ func (h *DownloadHandler) GetVersionPlain(w http.ResponseWriter, r *http.Request
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(version))
+	_, _ = w.Write([]byte(version))
 }
 
 // GetDownloadURLPlain returns the signed download URL as plain text
@@ -79,5 +79,5 @@ func (h *DownloadHandler) GetDownloadURLPlain(w http.ResponseWriter, r *http.Req
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(url))
+	_, _ = w.Write([]byte(url))
 }
