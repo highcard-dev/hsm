@@ -10,35 +10,26 @@ A simple tool to download and manage your Hytale dedicated server.
 
 ## Quick Start
 
-### Option 1: Docker (Recommended)
-
-Pull the pre-built image:
-
-```bash
-docker pull yourusername/hsm:latest
-```
-
-### Option 2: Download Binary
-
-Download the latest release for your operating system from the [Releases Page](https://github.com/yourusername/hsm/releases).
+Download the latest release for your operating system from the [Releases Page](https://github.com/highcard-dev/hsm/releases).
 
 Available for:
 - Windows
 - macOS (Intel & Apple Silicon)
 - Linux (x64 & ARM)
 
+Alternativly, you can also run HSM as a docker container
+
+```bash
+docker run highcard/hsm:latest -v $PWD:/data download
+```
+
+
 ---
 
-## How to Use
+## Usage - Single User Mode
 
 ### Step 1: Login to Hytale
 
-**With Docker:**
-```bash
-docker run -it --rm -v $(pwd)/config:/home/hsm/.config yourusername/hsm login
-```
-
-**With Binary:**
 ```bash
 hsm login
 ```
@@ -47,18 +38,20 @@ This will open your browser to log in with your Hytale account.
 
 ### Step 2: Download the Server
 
+**With Binary:**
+```bash
+hsm download
+```
+
 **With Docker:**
 ```bash
 docker run -it --rm \
   -v $(pwd):/data \
   -v $(pwd)/config:/home/hsm/.config \
-  yourusername/hsm download
+  highcard/hsm download
 ```
 
-**With Binary:**
-```bash
-hsm download
-```
+**Docker runs will ask for login credentials automatically, you don't need to call login manually.**
 
 The server files will be downloaded and extracted to your current folder.
 
@@ -69,7 +62,7 @@ The server files will be downloaded and extracted to your current folder.
 docker run -it --rm \
   -v $(pwd)/config:/home/hsm/.config \
   -p 8080:8080 \
-  yourusername/hsm serve
+  highcard/hsm serve
 ```
 
 **With Binary:**
@@ -85,75 +78,19 @@ curl -X POST http://localhost:8080/game-session
 
 This gives you the tokens needed to start your Hytale server.
 
----
+## Usage - Game Hosting providers
 
-## Common Options
+### Authentication
 
-| Option | Description |
-|--------|-------------|
-| `--output /path/to/folder` | Download server files to a specific folder |
-| `--patchline prerelease` | Download prerelease version instead of stable |
-| `--port 3000` | Run the HTTP server on a different port |
+For Game Hosting Providers it is highly recommended to deploy HSM as a service to your infrastructure.
+To manage the retrieval of game sessions, download URLs and anything else, a JWKS/JWT authentication flow can be used.
+HSM Service will automatically secure every endpoint when you run it with the `--jwks-endpoint` flag (e.g., `hsm serve --jwks-endpoint https://your-auth-server/.well-known/jwks.json`).
+For an example, take a look at the [hosted-auth example](examples/hosted-auth).
 
----
+**This works very well with Kubernetes Service accounts too and is the way how it is used at druid.gg**
 
-## Need Help?
-
-- Check the [Releases Page](https://github.com/yourusername/hsm/releases) for the latest version
-- Open an [Issue](https://github.com/yourusername/hsm/issues) if you run into problems
-
----
-
-## For Advanced Users
-
-<details>
-<summary>Click to expand advanced documentation</summary>
-
-### Running as a Service
-
-You can run HSM as a background HTTP service using Docker Compose:
-
-```yaml
-services:
-  hsm:
-    image: yourusername/hsm:latest
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./config:/home/hsm/.config
-    command: serve
-    restart: unless-stopped
-```
-
-### API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/health` | GET | Check if HSM is running |
-| `/download` | GET | Get server download URL |
-| `/version` | GET | Get latest server version |
-| `/game-session` | POST | Get game session tokens |
-
-### For Hosting Providers (GSP Mode)
-
-If you're a game server provider and need multi-user support with JWT authentication:
-
-```bash
-hsm serve --jwks-endpoint https://your-auth-server/.well-known/jwks.json
-```
-
-This enables JWT-based authentication where each user gets their own isolated session.
-
-### Building from Source
-
-```bash
-git clone https://github.com/yourusername/hsm.git
-cd hsm
-go build -o hsm main.go
-```
-
-</details>
-
-## License
-
-[Add your license here]
+### No Authentication
+If you disable authentication, make sure the service is not reachable from the outside world or by any entity (including your customers).
+Otherwise someone can generate unlimited game sessions through your account.
+Depending on your setup, authentication can be omitted if the customer does not have enough permission to abuse the session generation.
+This highly depends on your exact setup!
