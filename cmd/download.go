@@ -119,10 +119,16 @@ func downloadAndExtract(url, dest string) error {
 
 // extractZipFile extracts a single file from the zip archive
 func extractZipFile(f *zip.File, dest string) error {
-	fpath := filepath.Join(dest, f.Name)
+	// Convert dest to absolute path for proper ZipSlip check
+	destAbs, err := filepath.Abs(dest)
+	if err != nil {
+		return fmt.Errorf("failed to get absolute path: %w", err)
+	}
+
+	fpath := filepath.Join(destAbs, f.Name)
 
 	// Check for ZipSlip vulnerability
-	if !strings.HasPrefix(filepath.Clean(fpath), filepath.Clean(dest)+string(os.PathSeparator)) {
+	if !strings.HasPrefix(filepath.Clean(fpath), destAbs+string(os.PathSeparator)) {
 		return fmt.Errorf("invalid file path in zip: %s", f.Name)
 	}
 
