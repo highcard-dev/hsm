@@ -12,12 +12,13 @@ import (
 type Config struct {
 	Port         string
 	JWKSEndpoint string
+	SessionPath  string
 }
 
 // Start initializes and starts the HTTP server
 func Start(config Config) error {
 	c := client.New()
-	sessionService, err := services.NewSessionService(c)
+	sessionService, err := services.NewSessionService(c, config.SessionPath)
 	if err != nil {
 		log.Fatalf("failed to create session service: %v", err)
 	}

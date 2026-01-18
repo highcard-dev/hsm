@@ -19,6 +19,7 @@ var serveCmd = &cobra.Command{
 		config := server.Config{
 			Port:         port,
 			JWKSEndpoint: jwksEndpoint,
+			SessionPath:  GetSessionLocation(),
 		}
 		return server.Start(config)
 	},
@@ -28,5 +29,5 @@ func init() {
 	serveCmd.Flags().StringVarP(&port, "port", "p", "8080", "Port to listen on")
 	serveCmd.Flags().StringVar(&jwksEndpoint, "jwks-endpoint", "", "JWKS endpoint URL for JWT validation (optional, enables multi-user mode)")
 	rootCmd.AddCommand(serveCmd)
-	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(loginCmd)
 }

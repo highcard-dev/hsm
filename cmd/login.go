@@ -13,10 +13,10 @@ import (
 
 var stdoutFlag bool
 
-var initCmd = &cobra.Command{
-	Use:   "init",
-	Short: "Start the HTTP server",
-	Long:  "Start the HSM HTTP server on the specified port.",
+var loginCmd = &cobra.Command{
+	Use:   "login",
+	Short: "Login via device flow",
+	Long:  "Authenticate with Hytale using the OAuth2 device flow and save the session.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		deviceFlow := services.NewDeviceFlowService(client.New())
 		session, err := deviceFlow.Flow(context.Background())
@@ -47,12 +47,13 @@ var initCmd = &cobra.Command{
 			fmt.Fprintln(os.Stdout, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 			fmt.Fprintln(os.Stdout, "")
 		} else {
-			// Save session to JSON file by default
-			if err := utils.SaveSessionToFile(services.SessionFileName, session); err != nil {
+			// Save session to JSON file
+			sessionPath := GetSessionLocation()
+			if err := utils.SaveSessionToFile(sessionPath, session); err != nil {
 				return fmt.Errorf("failed to save session: %w", err)
 			}
 
-			fmt.Printf("Session saved to %s\n", services.SessionFileName)
+			fmt.Printf("Session saved to %s\n", sessionPath)
 		}
 
 		return nil
@@ -60,5 +61,5 @@ var initCmd = &cobra.Command{
 }
 
 func init() {
-	initCmd.Flags().BoolVar(&stdoutFlag, "stdout", false, "Output session token to stdout instead of saving to file")
+	loginCmd.Flags().BoolVar(&stdoutFlag, "stdout", false, "Output session token to stdout instead of saving to file")
 }

@@ -473,8 +473,8 @@ type SignedURLResponse struct {
 }
 
 // GetSignedURL fetches the signed download URL for a patchline
-func (c *Client) GetSignedURL(patchline string) (*SignedURLResponse, error) {
-	url := fmt.Sprintf("https://account-data.hytale.com/game-assets/version/%s.json", patchline)
+func (c *Client) GetSignedURL(file string) (*SignedURLResponse, error) {
+	url := fmt.Sprintf("https://account-data.hytale.com/game-assets/%s", file)
 
 	httpReq, err := http.NewRequest("GET", url, nil)
 	if err != nil {

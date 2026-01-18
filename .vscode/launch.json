@@ -24,6 +24,19 @@
             ],
             "env": {},
             "showLog": true
+        },
+        {
+            "name": "Debug serve",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "args": [
+                "serve",
+                "--jwks-endpoint=http://localhost:8081/jwks.json"
+            ],
+            "env": {},
+            "showLog": true
         }
     ]
 }

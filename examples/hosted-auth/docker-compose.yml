@@ -1,0 +1,21 @@
+services:
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - .:/usr/share/nginx/html/
+
+  hsm:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    depends_on:
+      - nginx
+    volumes:
+      - .:/data
+    restart: unless-stopped
+    command: serve --jwks-endpoint=http://nginx/jwks.json
+    ports:
+      - "8080:8080"

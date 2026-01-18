@@ -1,4 +1,13 @@
 tmp/
 __debug_*
 /hsm
+
 session.json
+.env
+
+Server/
+Assets.zip
+config.json
+logs/
+
+

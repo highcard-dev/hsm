@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -59,9 +60,32 @@ func (s *DownloadService) GetLatestVersion(patchline string) (string, error) {
 
 // GetDownloadURL fetches the signed download URL for a patchline
 func (s *DownloadService) GetDownloadURL(patchline string) (string, error) {
-	result, err := s.client.GetSignedURL(patchline)
+	resultFileInfoUrl, err := s.client.GetSignedURL(fmt.Sprintf("version/%s.json", patchline))
 	if err != nil {
 		return "", err
 	}
-	return result.URL, nil
+
+	resp, err := http.Get(resultFileInfoUrl.URL)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var resultFileInfo struct {
+		DownloadURL string `json:"download_url"`
+	}
+	if err := json.Unmarshal(body, &resultFileInfo); err != nil {
+		return "", err
+	}
+
+	resultDownloadURL, err := s.client.GetSignedURL(resultFileInfo.DownloadURL)
+	if err != nil {
+		return "", err
+	}
+	return resultDownloadURL.URL, nil
 }

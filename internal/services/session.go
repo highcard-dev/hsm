@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	SessionFileName      = "session.json"
 	RefreshThreshold     = 5 * time.Minute
 	RefreshCheckInterval = 1 * time.Minute
 )
@@ -27,10 +26,10 @@ type SessionService struct {
 	cancel      context.CancelFunc
 }
 
-func NewSessionService(c *client.Client) (*SessionService, error) {
+func NewSessionService(c *client.Client, sessionPath string) (*SessionService, error) {
 	svc := &SessionService{
 		client:      c,
-		sessionPath: SessionFileName,
+		sessionPath: sessionPath,
 	}
 
 	if err := svc.loadAndRefreshSession(); err != nil {

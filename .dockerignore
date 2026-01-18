@@ -1,0 +1,56 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Local development files
+.air.toml
+tmp/
+.env
+.env.*
+!.env.example
+
+# Session files
+session.json
+*.json
+!examples/**/*.json
+
+# Documentation
+*.md
+!LICENSE.md
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Examples (not needed in image)
+examples/
+
+# Scripts (not needed in image)
+scripts/
+
+# Makefile
+Makefile
