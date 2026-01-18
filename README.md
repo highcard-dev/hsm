@@ -94,3 +94,4 @@ If you disable authentication, make sure the service is not reachable from the o
 Otherwise someone can generate unlimited game sessions through your account.
 Depending on your setup, authentication can be omitted if the customer does not have enough permission to abuse the session generation.
 This highly depends on your exact setup!
+Checkout the no-auth [hosted-no-auth example](examples/hosted-no-auth). 
