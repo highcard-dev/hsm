@@ -43,6 +43,13 @@ This will open your browser to log in with your Hytale account.
 hsm download
 ```
 
+###  Start the Server
+
+**With Binary:**
+```bash
+hsm start
+```
+
 **With Docker:**
 ```bash
 docker run -it --rm \
