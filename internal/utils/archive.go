@@ -16,7 +16,7 @@ func DownloadFile(url, dest string) error {
 	if err != nil {
 		return fmt.Errorf("request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("unexpected status: %d", resp.StatusCode)
@@ -26,7 +26,7 @@ func DownloadFile(url, dest string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}
-	defer out.Close()
+	defer func() { _ = out.Close() }()
 
 	fmt.Println("Downloading...")
 	pw := NewProgressWriter(resp.ContentLength)
@@ -42,7 +42,7 @@ func ExtractZip(zipPath, dest string) error {
 	if err != nil {
 		return fmt.Errorf("failed to open zip: %w", err)
 	}
-	defer r.Close()
+	defer func() { _ = r.Close() }()
 
 	destAbs, err := filepath.Abs(dest)
 	if err != nil {
@@ -91,13 +91,13 @@ func extractFile(f *zip.File, destAbs string) error {
 	if err != nil {
 		return err
 	}
-	defer rc.Close()
+	defer func() { _ = rc.Close() }()
 
 	out, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() { _ = out.Close() }()
 
 	_, err = io.Copy(out, rc)
 	return err
@@ -110,8 +110,8 @@ func DownloadAndExtract(url, dest string) error {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
 	tmpPath := tmp.Name()
-	tmp.Close()
-	defer os.Remove(tmpPath)
+	_ = tmp.Close()
+	defer func() { _ = os.Remove(tmpPath) }()
 
 	if err := DownloadFile(url, tmpPath); err != nil {
 		return err
