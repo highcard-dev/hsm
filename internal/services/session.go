@@ -119,6 +119,11 @@ func (s *SessionService) Close() {
 	}
 }
 
+// Client returns the underlying API client
+func (s *SessionService) Client() *client.Client {
+	return s.client
+}
+
 // CreateGameSession creates a new game session via the API
 func (s *SessionService) CreateGameSession() (*client.GameSession, error) {
 	return s.client.CreateGameSession(s.profileId)
