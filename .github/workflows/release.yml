@@ -82,8 +82,8 @@ jobs:
             cp "$dir"/* release/
           done
 
-          # Copy scripts folder
-          cp -r scripts release/
+          # Copy scripts files directly (not as subdirectory)
+          cp scripts/* release/
 
           cd release
           # Create checksums (only for files, not directories)
