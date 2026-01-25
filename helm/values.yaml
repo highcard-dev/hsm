@@ -131,18 +131,13 @@ affinity: {}
 
 # HSM specific configuration
 hsm:
-  # Server data persistence
+  # Server data persistence (includes session.json)
   persistence:
     enabled: true
     storageClass: ""
     accessMode: ReadWriteOnce
-    size: 10Gi
-    # existingClaim: ""
-  
-  # Session file persistence
-  sessionPersistence:
-    storageClass: ""
     size: 10Mi
+    # existingClaim: ""
 
   # JWKS Url, if set authentication will be enabled
   jwks_endpoint: ""

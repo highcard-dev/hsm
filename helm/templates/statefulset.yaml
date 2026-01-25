@@ -50,7 +50,7 @@ spec:
           - name: HSM_PORT
             value: {{ .Values.hsm.config.port | quote }}
           - name: SESSION_FILE
-            value: "/session/session.json"
+            value: "/data/session.json"
           {{- with .Values.hsm.env }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
@@ -76,8 +76,6 @@ spec:
           volumeMounts:
           - name: data
             mountPath: /data
-          - name: session-data
-            mountPath: /session
           {{- with .Values.volumeMounts }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
@@ -104,14 +102,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-  volumeClaimTemplates:
-  - metadata:
-      name: session-data
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      {{- if .Values.hsm.sessionPersistence.storageClass }}
-      storageClassName: {{ .Values.hsm.sessionPersistence.storageClass | quote }}
-      {{- end }}
-      resources:
-        requests:
-          storage: {{ .Values.hsm.sessionPersistence.size }}

@@ -12,3 +12,5 @@ logs/
 
 
 bin
+
+/values.yaml
