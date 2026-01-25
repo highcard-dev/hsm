@@ -21,7 +21,7 @@ Available for:
 Alternativly, you can also run HSM as a docker container
 
 ```bash
-docker run highcard/hsm:latest -v $PWD:/data download
+docker pull highcard/hsm:stable
 ```
 
 ---
