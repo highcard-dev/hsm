@@ -1,0 +1,21 @@
+{{- if and .Values.hsm.persistence.enabled (not .Values.hsm.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "helm.fullname" . }}
+  labels:
+    {{- include "helm.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.hsm.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.hsm.persistence.size | quote }}
+  {{- if .Values.hsm.persistence.storageClass }}
+  {{- if (eq "-" .Values.hsm.persistence.storageClass) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: {{ .Values.hsm.persistence.storageClass | quote }}
+  {{- end }}
+  {{- end }}
+{{- end }}
