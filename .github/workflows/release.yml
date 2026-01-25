@@ -106,6 +106,12 @@ jobs:
         with:
           version: "latest"
 
+      - name: Update Chart versions
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          sed -i "s/^version:.*/version: $VERSION/" charts/hsm/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: \"$VERSION\"/" charts/hsm/Chart.yaml
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
         with:
