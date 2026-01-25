@@ -27,8 +27,8 @@ keywords:
   - hytale
   - game-server
   - server-manager
-home: https://github.com/marcschottstadt/hsm
+home: https://github.com/highcard-dev/hsm
 sources:
-  - https://github.com/marcschottstadt/hsm
+  - https://github.com/highcard-dev/hsm
 maintainers:
-  - name: Marc Schottstadt
+  - name: Highcard Team

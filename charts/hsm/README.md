@@ -1,6 +1,6 @@
 # HSM Helm Chart
 
-This Helm chart deploys the Hytale Server Manager (HSM) on Kubernetes.
+This Helm chart deploys the Hytale Server Manager (HSM) on Kubernetes as a Service.
 
 ## Installation
 

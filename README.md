@@ -1,6 +1,6 @@
 # Hytale Server Manager (HSM)
 
-A simple tool to download and manage your Hytale dedicated server.
+A simple tool to download and manage your Hytale dedicated server lifecycle.
 
 ## What Does It Do?
 
