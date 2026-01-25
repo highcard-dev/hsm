@@ -13,6 +13,7 @@ A simple tool to download and manage your Hytale dedicated server.
 Download the latest release for your operating system from the [Releases Page](https://github.com/highcard-dev/hsm/releases).
 
 Available for:
+
 - Windows
 - macOS (Intel & Apple Silicon)
 - Linux (x64 & ARM)
@@ -22,7 +23,6 @@ Alternativly, you can also run HSM as a docker container
 ```bash
 docker run highcard/hsm:latest -v $PWD:/data download
 ```
-
 
 ---
 
@@ -36,21 +36,24 @@ hsm login
 
 This will open your browser to log in with your Hytale account.
 
-###  Download the Server
+### Download the Server
 
 **With Binary:**
+
 ```bash
 hsm download
 ```
 
-###  Start the Server
+### Start the Server
 
 **With Binary:**
+
 ```bash
 hsm start
 ```
 
 **With Docker:**
+
 ```bash
 docker run -it --rm \
   -v $(pwd):/data \
@@ -75,17 +78,33 @@ For an example, take a look at the [hosted-auth example](examples/hosted-auth).
 **This works very well with Kubernetes Service accounts too and is the way how it is used at druid.gg**
 
 ### No Authentication
+
 If you disable authentication, make sure the service is not reachable from the outside world or by any entity (including your customers).
 Otherwise someone can generate unlimited game sessions through your account.
 Depending on your setup, authentication can be omitted if the customer does not have enough permission to abuse the session generation.
 This highly depends on your exact setup!
 
-Checkout the no-auth [hosted-no-auth example](examples/hosted-no-auth). 
+Checkout the no-auth [hosted-no-auth example](examples/hosted-no-auth).
 
+### Run HSM as Service
 
-### Start Service
+#### Helm Chart
 
-**With Docker:**
+Add this repository to Helm:
+
+```
+helm repo add hsm https://highcard-dev.github.io/hsm/
+helm repo update
+```
+
+Install the chart:
+
+```
+helm install hsm hsm/hsm
+```
+
+#### Docker Container
+
 ```bash
 docker run -it --rm \
   -v $(pwd)/config:/home/hsm/.config \
@@ -93,7 +112,8 @@ docker run -it --rm \
   highcard/hsm serve
 ```
 
-**With Binary:**
+#### Binary
+
 ```bash
 hsm serve
 ```
@@ -107,7 +127,6 @@ curl -X POST http://localhost:8080/download
 ```
 
 Returns a presigned URL for the serverfile archive.
-
 
 ### Get Game Session
 
