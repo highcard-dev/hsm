@@ -86,8 +86,8 @@ jobs:
           cp -r scripts release/
 
           cd release
-          # Create checksums
-          sha256sum * > checksums.txt
+          # Create checksums (only for files, not directories)
+          find . -maxdepth 1 -type f -exec sha256sum {} \; > checksums.txt
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
