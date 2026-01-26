@@ -55,8 +55,6 @@ service:
   type: ClusterIP
   # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 8080
-  # Additional port for game server
-  gamePort: 40000
 
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
@@ -139,8 +137,22 @@ hsm:
     size: 10Mi
     # existingClaim: ""
 
+  # Use Kubernetes service account for authentication
+  # When enabled, automatically configures JWKS endpoint to use Kubernetes API
+  # and mounts the service account CA certificate
+  useServiceAccount: false
+  
   # JWKS Url, if set authentication will be enabled
+  # Ignored if useServiceAccount is true
   jwks_endpoint: ""
+  # CA certificate for JWKS endpoint (optional, for custom CA in Kubernetes)
+  # Can reference a Secret containing the CA cert, e.g., /etc/ssl/certs/ca.crt
+  # Ignored if useServiceAccount is true
+  jwks_ca_cert: ""
+  # Secret name containing CA certificate (optional)
+  # If specified, will mount the secret at /etc/ssl/certs/
+  # Ignored if useServiceAccount is true
+  jwks_ca_cert_secret: ""
   
   # HSM configuration
   config:

@@ -77,6 +77,36 @@ For an example, take a look at the [hosted-auth example](examples/hosted-auth).
 
 **This works very well with Kubernetes Service accounts too and is the way how it is used at druid.gg**
 
+#### Using Kubernetes Service Account Authentication
+
+The simplest way to enable authentication in Kubernetes is using service accounts:
+
+```yaml
+hsm:
+  useServiceAccount: true
+```
+
+This automatically configures HSM to validate JWTs from Kubernetes service accounts using the cluster's JWKS endpoint.
+
+#### Custom CA Certificates for Kubernetes
+
+When running in Kubernetes with custom CA certificates (e.g., for internal JWKS endpoints with self-signed certificates), you can specify a CA certificate file:
+
+```bash
+hsm serve --jwks-endpoint https://your-auth-server/.well-known/jwks.json --jwks-ca-cert /etc/ssl/certs/ca.crt
+```
+
+In Helm, configure it using:
+
+```yaml
+hsm:
+  jwks_endpoint: "https://your-auth-server/.well-known/jwks.json"
+  jwks_ca_cert: "/etc/ssl/certs/ca.crt"
+  jwks_ca_cert_secret: "your-ca-cert-secret"
+```
+
+The secret should contain a `ca.crt` key with your CA certificate.
+
 ### No Authentication
 
 If you disable authentication, make sure the service is not reachable from the outside world or by any entity (including your customers).

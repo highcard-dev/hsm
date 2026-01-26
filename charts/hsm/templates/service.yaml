@@ -11,9 +11,5 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
-    - port: {{ .Values.service.gamePort }}
-      targetPort: game
-      protocol: TCP
-      name: game
   selector:
     {{- include "helm.selectorLabels" . | nindent 4 }}

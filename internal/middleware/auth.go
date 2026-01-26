@@ -2,7 +2,10 @@ package middleware
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/MicahParks/keyfunc/v3"
@@ -14,8 +17,39 @@ type contextKey string
 const SubjectContextKey contextKey = "jwt_subject"
 
 // JWTAuth creates JWT authentication middleware using JWKS
-func JWTAuth(jwksURL string) func(http.Handler) http.Handler {
-	jwks, err := keyfunc.NewDefaultCtx(context.Background(), []string{jwksURL})
+// caCertFile is optional - if provided, it will be used for TLS verification when fetching JWKS
+func JWTAuth(jwksURL string, caCertFile string) func(http.Handler) http.Handler {
+	var jwks keyfunc.Keyfunc
+	var err error
+
+	if caCertFile != "" {
+		// Create custom HTTP client with CA cert
+		caCert, err := os.ReadFile(caCertFile)
+		if err != nil {
+			panic("failed to read CA cert file: " + err.Error())
+		}
+
+		caCertPool := x509.NewCertPool()
+		if !caCertPool.AppendCertsFromPEM(caCert) {
+			panic("failed to parse CA cert file")
+		}
+
+		httpClient := &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					RootCAs: caCertPool,
+				},
+			},
+		}
+
+		override := keyfunc.Override{
+			Client: httpClient,
+		}
+		jwks, err = keyfunc.NewDefaultOverrideCtx(context.Background(), []string{jwksURL}, override)
+	} else {
+		jwks, err = keyfunc.NewDefaultCtx(context.Background(), []string{jwksURL})
+	}
+
 	if err != nil {
 		panic("failed to create JWKS keyfunc: " + err.Error())
 	}

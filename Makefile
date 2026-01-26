@@ -4,8 +4,9 @@
 BINARY_NAME=hsm
 HELM_RELEASE_NAME=hsm
 HELM_NAMESPACE=default
-HELM_CHART_DIR=./helm
-HELM_VALUES_FILE?=values.yaml
+HELM_CHART_DIR=./charts/hsm
+#HELM_VALUES_FILE?=
+HELM_VALUES_FILE?=./values.yaml
 
 # Go parameters
 GOCMD=go

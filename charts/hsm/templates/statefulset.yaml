@@ -41,8 +41,14 @@ spec:
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if .Values.hsm.jwks_endpoint }}
+          {{- if .Values.hsm.useServiceAccount }}
+          args: ["serve", "--jwks-endpoint", "https://kubernetes.default.svc/openid/v1/jwks", "--jwks-ca-cert", "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"]
+          {{- else if .Values.hsm.jwks_endpoint }}
+          {{- if .Values.hsm.jwks_ca_cert }}
+          args: ["serve", "--jwks-endpoint", "{{ .Values.hsm.jwks_endpoint }}", "--jwks-ca-cert", "{{ .Values.hsm.jwks_ca_cert }}"]
+          {{- else }}
           args: ["serve", "--jwks-endpoint", "{{ .Values.hsm.jwks_endpoint }}"]
+          {{- end }}
           {{- else }}
           args: ["serve"]
           {{- end }}
@@ -57,9 +63,6 @@ spec:
           ports:
             - name: http
               containerPort: {{ .Values.hsm.config.port }}
-              protocol: TCP
-            - name: game
-              containerPort: {{ .Values.service.gamePort }}
               protocol: TCP
           {{- with .Values.livenessProbe }}
           livenessProbe:
@@ -76,6 +79,12 @@ spec:
           volumeMounts:
           - name: data
             mountPath: /data
+          {{- if .Values.hsm.jwks_ca_cert_secret }}
+          - name: ca-cert
+            mountPath: /etc/ssl/certs/ca.crt
+            subPath: ca.crt
+            readOnly: true
+          {{- end }}
           {{- with .Values.volumeMounts }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
@@ -87,6 +96,14 @@ spec:
         {{- else }}
         emptyDir: {}
         {{- end }}
+      {{- if .Values.hsm.jwks_ca_cert_secret }}
+      - name: ca-cert
+        secret:
+          secretName: {{ .Values.hsm.jwks_ca_cert_secret }}
+          items:
+          - key: ca.crt
+            path: ca.crt
+      {{- end }}
       {{- with .Values.volumes }}
       {{- toYaml . | nindent 6 }}
       {{- end }}

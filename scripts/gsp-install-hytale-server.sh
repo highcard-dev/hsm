@@ -6,7 +6,7 @@ echo "Installing hytale server..."
 
 #enforce HSM_URL is set
 if [ -z "$HSM_URL" ]; then
-    echo "HSM_HOST is not set"
+    echo "HSM_URL is not set"
     exit 1
 fi
 

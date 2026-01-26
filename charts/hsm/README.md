@@ -30,19 +30,22 @@ The following table lists the configurable parameters of the HSM chart and their
 
 ### Service Parameters
 
-| Parameter          | Description             | Default     |
-| ------------------ | ----------------------- | ----------- |
-| `service.type`     | Kubernetes service type | `ClusterIP` |
-| `service.port`     | HTTP service port       | `8080`      |
-| `service.gamePort` | Game server port        | `40000`     |
+| Parameter      | Description             | Default     |
+| -------------- | ----------------------- | ----------- |
+| `service.type` | Kubernetes service type | `ClusterIP` |
+| `service.port` | HTTP service port       | `8080`      |
 
 ### HSM Configuration
 
-| Parameter                | Description           | Default |
-| ------------------------ | --------------------- | ------- |
-| `hsm.config.authEnabled` | Enable authentication | `true`  |
-| `hsm.config.port`        | Port to listen on     | `8080`  |
-| `hsm.config.logLevel`    | Log level             | `info`  |
+| Parameter                 | Description                                     | Default |
+| ------------------------- | ----------------------------------------------- | ------- |
+| `hsm.config.authEnabled`  | Enable authentication                           | `true`  |
+| `hsm.config.port`         | Port to listen on                               | `8080`  |
+| `hsm.config.logLevel`     | Log level                                       | `info`  |
+| `hsm.useServiceAccount`   | Use Kubernetes service account authentication   | `false` |
+| `hsm.jwks_endpoint`       | JWKS endpoint URL for JWT validation (optional) | `""`    |
+| `hsm.jwks_ca_cert`        | CA certificate file path for JWKS endpoint      | `""`    |
+| `hsm.jwks_ca_cert_secret` | Secret name containing CA certificate           | `""`    |
 
 ### Persistence
 
@@ -99,6 +102,37 @@ hsm:
   persistence:
     enabled: true
     existingClaim: my-existing-pvc
+```
+
+### Enable Kubernetes Service Account Authentication
+
+For native Kubernetes service account authentication (simplest setup):
+
+```yaml
+hsm:
+  useServiceAccount: true
+```
+
+This automatically configures:
+
+- JWKS endpoint: `https://kubernetes.default.svc/openid/v1/jwks`
+- CA cert: `/var/run/secrets/kubernetes.io/serviceaccount/ca.crt`
+
+### Enable JWT Authentication with Custom CA Certificate
+
+For Kubernetes environments with custom CA certificates:
+
+```yaml
+hsm:
+  jwks_endpoint: "https://your-auth-server/.well-known/jwks.json"
+  jwks_ca_cert: "/etc/ssl/certs/ca.crt"
+  jwks_ca_cert_secret: "your-ca-cert-secret"
+```
+
+First, create the secret containing your CA certificate:
+
+```bash
+kubectl create secret generic your-ca-cert-secret --from-file=ca.crt=/path/to/your/ca.crt
 ```
 
 ## Upgrading
