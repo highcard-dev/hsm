@@ -10,6 +10,7 @@ var (
 	port         string
 	jwksEndpoint string
 	jwksCACert   string
+	jwksJWTToken string
 )
 
 var serveCmd = &cobra.Command{
@@ -21,6 +22,7 @@ var serveCmd = &cobra.Command{
 			Port:         port,
 			JWKSEndpoint: jwksEndpoint,
 			JWKSCACert:   jwksCACert,
+			JWKSJWTToken: jwksJWTToken,
 			SessionPath:  GetSessionLocation(),
 		}
 		return server.Start(config)
@@ -31,6 +33,7 @@ func init() {
 	serveCmd.Flags().StringVarP(&port, "port", "p", "8080", "Port to listen on")
 	serveCmd.Flags().StringVar(&jwksEndpoint, "jwks-endpoint", "", "JWKS endpoint URL for JWT validation (optional, enables multi-user mode)")
 	serveCmd.Flags().StringVar(&jwksCACert, "jwks-ca-cert", "", "CA certificate file for JWKS endpoint TLS verification (optional, for Kubernetes)")
+	serveCmd.Flags().StringVar(&jwksJWTToken, "jwks-jwt-token-file", "", "Path to JWT token file for JWKS endpoint authentication (optional, for Kubernetes service account)")
 	rootCmd.AddCommand(serveCmd)
 	rootCmd.AddCommand(loginCmd)
 }

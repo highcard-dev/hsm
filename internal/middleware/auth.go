@@ -16,14 +16,35 @@ type contextKey string
 
 const SubjectContextKey contextKey = "jwt_subject"
 
+// bearerTokenTransport wraps an http.RoundTripper to add a bearer token to requests
+type bearerTokenTransport struct {
+	base      http.RoundTripper
+	tokenFile string
+}
+
+func (t *bearerTokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// Read token fresh each time (Kubernetes rotates tokens)
+	token, err := os.ReadFile(t.tokenFile)
+	if err != nil {
+		return nil, err
+	}
+	req = req.Clone(req.Context())
+	req.Header.Set("Authorization", "Bearer "+strings.TrimSpace(string(token)))
+	return t.base.RoundTrip(req)
+}
+
 // JWTAuth creates JWT authentication middleware using JWKS
 // caCertFile is optional - if provided, it will be used for TLS verification when fetching JWKS
-func JWTAuth(jwksURL string, caCertFile string) func(http.Handler) http.Handler {
+// jwtTokenFile is optional - if provided, it will be used as bearer token when fetching JWKS (for Kubernetes API)
+func JWTAuth(jwksURL string, caCertFile string, jwtTokenFile string) func(http.Handler) http.Handler {
 	var jwks keyfunc.Keyfunc
 	var err error
 
+	// Build custom transport if CA cert or JWT token is provided
+	var transport http.RoundTripper = http.DefaultTransport
+
 	if caCertFile != "" {
-		// Create custom HTTP client with CA cert
+		// Create TLS config with custom CA cert
 		caCert, readErr := os.ReadFile(caCertFile)
 		if readErr != nil {
 			panic("failed to read CA cert file: " + readErr.Error())
@@ -34,12 +55,24 @@ func JWTAuth(jwksURL string, caCertFile string) func(http.Handler) http.Handler 
 			panic("failed to parse CA cert file")
 		}
 
-		httpClient := &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					RootCAs: caCertPool,
-				},
+		transport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs: caCertPool,
 			},
+		}
+	}
+
+	if jwtTokenFile != "" {
+		// Wrap transport with bearer token auth
+		transport = &bearerTokenTransport{
+			base:      transport,
+			tokenFile: jwtTokenFile,
+		}
+	}
+
+	if caCertFile != "" || jwtTokenFile != "" {
+		httpClient := &http.Client{
+			Transport: transport,
 		}
 
 		override := keyfunc.Override{

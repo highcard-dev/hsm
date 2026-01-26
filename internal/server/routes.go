@@ -11,7 +11,7 @@ import (
 const version = "1.0.0"
 
 // SetupRoutes configures all HTTP routes
-func SetupRoutes(sessionService *services.SessionService, downloadService *services.DownloadService, jwksEndpoint string, jwksCACert string) http.Handler {
+func SetupRoutes(sessionService *services.SessionService, downloadService *services.DownloadService, jwksEndpoint string, jwksCACert string, jwksJWTToken string) http.Handler {
 	healthHandler := handlers.NewHealthHandler(version)
 	downloadHandler := handlers.NewDownloadHandler(downloadService)
 
@@ -47,7 +47,7 @@ func SetupRoutes(sessionService *services.SessionService, downloadService *servi
 
 	// Apply JWT authentication middleware if JWKS endpoint is configured
 	if jwksEndpoint != "" {
-		protectedHandler = middleware.JWTAuth(jwksEndpoint, jwksCACert)(protectedHandler)
+		protectedHandler = middleware.JWTAuth(jwksEndpoint, jwksCACert, jwksJWTToken)(protectedHandler)
 	}
 
 	// Main mux combines public and protected routes

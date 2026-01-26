@@ -13,6 +13,7 @@ type Config struct {
 	Port         string
 	JWKSEndpoint string
 	JWKSCACert   string
+	JWKSJWTToken string
 	SessionPath  string
 }
 
@@ -25,7 +26,7 @@ func Start(config Config) error {
 	}
 	downloadService := services.NewDownloadService(c)
 
-	handler := SetupRoutes(sessionService, downloadService, config.JWKSEndpoint, config.JWKSCACert)
+	handler := SetupRoutes(sessionService, downloadService, config.JWKSEndpoint, config.JWKSCACert, config.JWKSJWTToken)
 
 	if config.JWKSEndpoint != "" {
 		log.Printf("Multi-user mode enabled with JWKS endpoint: %s", config.JWKSEndpoint)

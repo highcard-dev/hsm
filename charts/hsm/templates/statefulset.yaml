@@ -42,7 +42,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- if .Values.hsm.useServiceAccount }}
-          args: ["serve", "--jwks-endpoint", "https://kubernetes.default.svc/openid/v1/jwks", "--jwks-ca-cert", "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"]
+          args: ["serve", "--jwks-endpoint", "https://kubernetes.default.svc/openid/v1/jwks", "--jwks-ca-cert", "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt", "--jwks-jwt-token-file", "/var/run/secrets/kubernetes.io/serviceaccount/token"]
           {{- else if .Values.hsm.jwks_endpoint }}
           {{- if .Values.hsm.jwks_ca_cert }}
           args: ["serve", "--jwks-endpoint", "{{ .Values.hsm.jwks_endpoint }}", "--jwks-ca-cert", "{{ .Values.hsm.jwks_ca_cert }}"]

@@ -139,7 +139,9 @@ hsm:
 
   # Use Kubernetes service account for authentication
   # When enabled, automatically configures JWKS endpoint to use Kubernetes API
-  # and mounts the service account CA certificate
+  # and mounts the service account CA certificate and JWT token for authentication
+  # The service account token is used to authenticate with the Kubernetes API
+  # to fetch the JWKS from https://kubernetes.default.svc/openid/v1/jwks
   useServiceAccount: false
   
   # JWKS Url, if set authentication will be enabled
