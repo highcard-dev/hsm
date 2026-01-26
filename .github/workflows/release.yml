@@ -117,5 +117,6 @@ jobs:
         with:
           charts_dir: charts
           skip_existing: false
+          skip_upload: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

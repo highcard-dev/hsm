@@ -24,9 +24,9 @@ func JWTAuth(jwksURL string, caCertFile string) func(http.Handler) http.Handler 
 
 	if caCertFile != "" {
 		// Create custom HTTP client with CA cert
-		caCert, err := os.ReadFile(caCertFile)
-		if err != nil {
-			panic("failed to read CA cert file: " + err.Error())
+		caCert, readErr := os.ReadFile(caCertFile)
+		if readErr != nil {
+			panic("failed to read CA cert file: " + readErr.Error())
 		}
 
 		caCertPool := x509.NewCertPool()
