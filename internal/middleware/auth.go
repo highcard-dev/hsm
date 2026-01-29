@@ -41,7 +41,7 @@ func JWTAuth(jwksURL string, caCertFile string, jwtTokenFile string) func(http.H
 	var err error
 
 	// Build custom transport if CA cert or JWT token is provided
-	var transport http.RoundTripper = http.DefaultTransport
+	var transport = http.DefaultTransport
 
 	if caCertFile != "" {
 		// Create TLS config with custom CA cert

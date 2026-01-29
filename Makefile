@@ -70,7 +70,7 @@ lint-install:
 
 # Lint (requires golangci-lint)
 lint:
-	./bin/golangci-lint run
+	./bin/golangci-lint run ./...
 
 # Tidy dependencies
 tidy:
