@@ -14,7 +14,6 @@ echo "Fetching download URL from $HSM_URL..."
 
 CURL_ARGS=(-sSf)
 if [ -n "$JWT_TOKEN" ]; then
-    echo "Using JWT token $JWT_TOKEN"
     CURL_ARGS+=(-H "Authorization: Bearer $JWT_TOKEN")
 fi
 
