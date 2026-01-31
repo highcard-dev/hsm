@@ -1,4 +1,4 @@
-.PHONY: build clean run test fmt lint lint-install vet tidy helm-install helm-upgrade helm-uninstall helm-package helm-lint
+.PHONY: build clean run test fmt lint lint-install vet tidy hooks-install helm-install helm-upgrade helm-uninstall helm-package helm-lint
 
 # Binary name
 BINARY_NAME=hsm
@@ -83,6 +83,11 @@ deps:
 # Install the binary
 install: build
 	cp $(BINARY_NAME) $(GOPATH)/bin/
+
+# Install git hooks
+hooks-install:
+	@command -v lefthook >/dev/null 2>&1 || go install github.com/evilmartians/lefthook@latest
+	lefthook install
 
 # Helm targets
 
