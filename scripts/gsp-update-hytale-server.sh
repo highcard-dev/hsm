@@ -17,6 +17,15 @@ if [ -n "$JWT_TOKEN" ]; then
     CURL_ARGS+=(-H "Authorization: Bearer $JWT_TOKEN")
 fi
 
+CURRENT_VERSION=$(cat version.txt)
+
+LATEST_VERSION=$(curl "${CURL_ARGS[@]}" "$HSM_URL/version?patchline=${PATCHLINE:-release}")
+
+if [ -n "$CURRENT_VERSION" ] && [ "$CURRENT_VERSION" == "$LATEST_VERSION" ]; then
+    echo "Already up to date"
+    exit 0
+fi
+
 DOWNLOAD_URL=$(curl "${CURL_ARGS[@]}" "$HSM_URL/download?patchline=${PATCHLINE:-release}")
 
 

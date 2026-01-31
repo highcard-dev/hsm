@@ -29,35 +29,6 @@ func NewDownloadService(c *client.Client) *DownloadService {
 	}
 }
 
-// fetchJSON makes a GET request and decodes the JSON response into the provided target
-func (s *DownloadService) fetchJSON(url string, target any) error {
-	resp, err := s.httpClient.Get(url)
-	if err != nil {
-		return fmt.Errorf("request failed: %w", err)
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status: %d", resp.StatusCode)
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(target); err != nil {
-		return fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	return nil
-}
-
-func (s *DownloadService) GetLatestVersion(patchline string) (string, error) {
-	var result struct {
-		Latest string `json:"latest"`
-	}
-	if err := s.fetchJSON(downloadBaseURLRelease+"/version.json", &result); err != nil {
-		return "", err
-	}
-	return result.Latest, nil
-}
-
 // GetDownloadURL fetches the signed download URL for a patchline
 func (s *DownloadService) GetDownloadURL(patchline string) (string, string, error) {
 	resultFileInfoUrl, err := s.client.GetSignedURL(fmt.Sprintf("version/%s.json", patchline))

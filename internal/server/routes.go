@@ -40,8 +40,7 @@ func SetupRoutes(sessionService *services.SessionService, downloadService *servi
 	protectedMux.HandleFunc("POST /api/v1/session/refresh", sessionHandler.Refresh)
 	protectedMux.HandleFunc("DELETE /api/v1/session", sessionHandler.Delete)
 
-	protectedMux.HandleFunc("GET /api/v1/download/version", downloadHandler.GetVersion)
-	protectedMux.HandleFunc("GET /api/v1/download/url", downloadHandler.GetDownloadURL)
+	protectedMux.HandleFunc("GET /api/v1/download", downloadHandler.GetDownloadURL)
 
 	var protectedHandler http.Handler = protectedMux
 
