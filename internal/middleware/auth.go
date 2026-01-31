@@ -123,3 +123,23 @@ func GetSubjectFromContext(ctx context.Context) (string, bool) {
 	subject, ok := ctx.Value(SubjectContextKey).(string)
 	return subject, ok
 }
+
+// JWTAuthWithPublicPaths creates JWT authentication middleware that skips auth for specified paths
+func JWTAuthWithPublicPaths(jwksURL string, caCertFile string, jwtTokenFile string, publicPaths []string) func(http.Handler) http.Handler {
+	jwtMiddleware := JWTAuth(jwksURL, caCertFile, jwtTokenFile)
+
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Check if the path is public
+			for _, path := range publicPaths {
+				if r.URL.Path == path {
+					next.ServeHTTP(w, r)
+					return
+				}
+			}
+
+			// Apply JWT auth for non-public paths
+			jwtMiddleware(next).ServeHTTP(w, r)
+		})
+	}
+}

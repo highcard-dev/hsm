@@ -1,61 +1,39 @@
 package handlers
 
 import (
+	"net/http"
+
+	"hsm/api"
 	"hsm/internal/services"
 	"hsm/internal/utils"
-	"net/http"
 )
 
-type DownloadHandler struct {
-	downloadService *services.DownloadService
-}
-
-func NewDownloadHandler(downloadService *services.DownloadService) *DownloadHandler {
-	return &DownloadHandler{downloadService: downloadService}
-}
-
-// GetDownloadURL returns the signed download URL for a patchline
-func (h *DownloadHandler) GetDownloadURL(w http.ResponseWriter, r *http.Request) {
-	patchline := r.URL.Query().Get("patchline")
-	if patchline == "" {
-		patchline = services.PatchlineRelease
+// GetDownloadURL returns the download URL as JSON
+// (GET /api/v1/download)
+func (s *Server) GetDownloadURL(w http.ResponseWriter, r *http.Request, params api.GetDownloadURLParams) {
+	patchline := services.PatchlineRelease
+	if params.Patchline != nil && *params.Patchline != "" {
+		patchline = *params.Patchline
 	}
 
-	url, version, err := h.downloadService.GetDownloadURL(patchline)
+	url, version, err := s.downloadService.GetDownloadURL(patchline)
 	if err != nil {
-		utils.WriteJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.WriteJSON(w, http.StatusInternalServerError, api.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, map[string]string{"url": url, "version": version})
+	utils.WriteJSON(w, http.StatusOK, api.DownloadResponse{Url: url, Version: version})
 }
 
-// GetVersionPlain returns the latest version as plain text
-func (h *DownloadHandler) GetVersionPlain(w http.ResponseWriter, r *http.Request) {
-	patchline := r.URL.Query().Get("patchline")
-	if patchline == "" {
-		patchline = services.PatchlineRelease
+// GetDownloadURLPlain returns the download URL as plain text
+// (GET /download)
+func (s *Server) GetDownloadURLPlain(w http.ResponseWriter, r *http.Request, params api.GetDownloadURLPlainParams) {
+	patchline := services.PatchlineRelease
+	if params.Patchline != nil && *params.Patchline != "" {
+		patchline = *params.Patchline
 	}
 
-	_, version, err := h.downloadService.GetDownloadURL(patchline)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(version))
-}
-
-// GetDownloadURLPlain returns the signed download URL as plain text
-func (h *DownloadHandler) GetDownloadURLPlain(w http.ResponseWriter, r *http.Request) {
-	patchline := r.URL.Query().Get("patchline")
-	if patchline == "" {
-		patchline = services.PatchlineRelease
-	}
-
-	url, _, err := h.downloadService.GetDownloadURL(patchline)
+	url, _, err := s.downloadService.GetDownloadURL(patchline)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -64,4 +42,23 @@ func (h *DownloadHandler) GetDownloadURLPlain(w http.ResponseWriter, r *http.Req
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte(url))
+}
+
+// GetVersionPlain returns the version as plain text
+// (GET /version)
+func (s *Server) GetVersionPlain(w http.ResponseWriter, r *http.Request, params api.GetVersionPlainParams) {
+	patchline := services.PatchlineRelease
+	if params.Patchline != nil && *params.Patchline != "" {
+		patchline = *params.Patchline
+	}
+
+	_, version, err := s.downloadService.GetDownloadURL(patchline)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(version))
 }

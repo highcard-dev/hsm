@@ -1,73 +1,143 @@
 package handlers
 
 import (
-	"hsm/internal/client"
-	"hsm/internal/middleware"
-	"hsm/internal/services"
-	"hsm/internal/utils"
 	"log"
 	"net/http"
+
+	"hsm/api"
+	"hsm/internal/client"
+	"hsm/internal/middleware"
+	"hsm/internal/utils"
 )
 
-type SessionHandler struct {
-	sessionService     *services.SessionService
-	userSessionService *services.UserSessionService
-}
-
-func NewSessionHandler(sessionService *services.SessionService) *SessionHandler {
-	return &SessionHandler{sessionService: sessionService}
-}
-
-func NewMultiUserSessionHandler(sessionService *services.SessionService, userSessionService *services.UserSessionService) *SessionHandler {
-	return &SessionHandler{
-		sessionService:     sessionService,
-		userSessionService: userSessionService,
+// GetSession returns the current session (multi-user only)
+// (GET /api/v1/session)
+func (s *Server) GetSession(w http.ResponseWriter, r *http.Request) {
+	if !s.isMultiUser() {
+		utils.WriteJSON(w, http.StatusNotImplemented, api.ErrorResponse{Error: "not available in single-user mode"})
+		return
 	}
+
+	subject, ok := middleware.GetSubjectFromContext(r.Context())
+	if !ok {
+		utils.WriteJSON(w, http.StatusUnauthorized, api.ErrorResponse{Error: "unauthorized"})
+		return
+	}
+
+	session := s.userSessionService.GetSession(subject)
+	if session == nil {
+		utils.WriteJSON(w, http.StatusNotFound, api.ErrorResponse{Error: "no session"})
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, toAPIGameSession(session))
 }
 
-func (h *SessionHandler) isMultiUser() bool {
-	return h.userSessionService != nil
-}
-
-// Create creates a new session
-func (h *SessionHandler) Create(w http.ResponseWriter, r *http.Request) {
+// CreateSession creates a new session
+// (POST /api/v1/session)
+func (s *Server) CreateSession(w http.ResponseWriter, r *http.Request) {
 	var session *client.GameSession
 	var err error
 
-	if h.isMultiUser() {
+	if s.isMultiUser() {
 		subject, ok := middleware.GetSubjectFromContext(r.Context())
 		if !ok {
-			utils.WriteJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+			utils.WriteJSON(w, http.StatusUnauthorized, api.ErrorResponse{Error: "unauthorized"})
 			return
 		}
-		session, err = h.userSessionService.GetOrCreateSession(subject)
+		session, err = s.userSessionService.GetOrCreateSession(subject)
 	} else {
-		session, err = h.sessionService.CreateGameSession()
+		session, err = s.sessionService.CreateGameSession()
 	}
 
 	if err != nil {
 		log.Printf("failed to create game session: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.WriteJSON(w, http.StatusInternalServerError, api.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, session)
+	utils.WriteJSON(w, http.StatusOK, toAPIGameSession(session))
 }
 
-// CreateEnv creates a new session and returns it in env format
-func (h *SessionHandler) CreateEnv(w http.ResponseWriter, r *http.Request) {
+// DeleteSession deletes a session
+// (DELETE /api/v1/session)
+func (s *Server) DeleteSession(w http.ResponseWriter, r *http.Request, params api.DeleteSessionParams) {
+	if s.isMultiUser() {
+		subject, ok := middleware.GetSubjectFromContext(r.Context())
+		if !ok {
+			utils.WriteJSON(w, http.StatusUnauthorized, api.ErrorResponse{Error: "unauthorized"})
+			return
+		}
+		if err := s.userSessionService.DeleteSession(subject); err != nil {
+			log.Printf("failed to delete game session: %v", err)
+			utils.WriteJSON(w, http.StatusInternalServerError, api.ErrorResponse{Error: err.Error()})
+			return
+		}
+	} else {
+		if params.Token == nil || *params.Token == "" {
+			utils.WriteJSON(w, http.StatusBadRequest, api.ErrorResponse{Error: "token required"})
+			return
+		}
+		if err := s.sessionService.DeleteGameSession(*params.Token); err != nil {
+			log.Printf("failed to delete game session: %v", err)
+			utils.WriteJSON(w, http.StatusInternalServerError, api.ErrorResponse{Error: err.Error()})
+			return
+		}
+	}
+
+	utils.WriteJSON(w, http.StatusOK, api.MessageResponse{Message: "deleted"})
+}
+
+// RefreshSession refreshes a session
+// (POST /api/v1/session/refresh)
+func (s *Server) RefreshSession(w http.ResponseWriter, r *http.Request, params api.RefreshSessionParams) {
 	var session *client.GameSession
 	var err error
 
-	if h.isMultiUser() {
+	if s.isMultiUser() {
+		subject, ok := middleware.GetSubjectFromContext(r.Context())
+		if !ok {
+			utils.WriteJSON(w, http.StatusUnauthorized, api.ErrorResponse{Error: "unauthorized"})
+			return
+		}
+		session, err = s.userSessionService.RefreshSession(subject)
+	} else {
+		if params.Token == nil || *params.Token == "" {
+			utils.WriteJSON(w, http.StatusBadRequest, api.ErrorResponse{Error: "token required"})
+			return
+		}
+		session, err = s.sessionService.RefreshGameSession(*params.Token)
+	}
+
+	if err != nil {
+		log.Printf("failed to refresh game session: %v", err)
+		utils.WriteJSON(w, http.StatusInternalServerError, api.ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	if session == nil {
+		utils.WriteJSON(w, http.StatusNotFound, api.ErrorResponse{Error: "no session"})
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, toAPIGameSession(session))
+}
+
+// CreateGameSessionEnv creates a session and returns it in env format
+// (POST /game-session)
+func (s *Server) CreateGameSessionEnv(w http.ResponseWriter, r *http.Request) {
+	var session *client.GameSession
+	var err error
+
+	if s.isMultiUser() {
 		subject, ok := middleware.GetSubjectFromContext(r.Context())
 		if !ok {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
-		session, err = h.userSessionService.GetOrCreateSession(subject)
+		session, err = s.userSessionService.GetOrCreateSession(subject)
 	} else {
-		session, err = h.sessionService.CreateGameSession()
+		session, err = s.sessionService.CreateGameSession()
 	}
 
 	if err != nil {
@@ -82,88 +152,11 @@ func (h *SessionHandler) CreateEnv(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("HYTALE_SERVER_IDENTITY_TOKEN=\"" + session.IdentityToken + "\"\n"))
 }
 
-// Get returns the current session (multi-user only)
-func (h *SessionHandler) Get(w http.ResponseWriter, r *http.Request) {
-	if !h.isMultiUser() {
-		utils.WriteJSON(w, http.StatusNotImplemented, map[string]string{"error": "not available in single-user mode"})
-		return
+// toAPIGameSession converts a client.GameSession to api.GameSession
+func toAPIGameSession(session *client.GameSession) api.GameSession {
+	return api.GameSession{
+		SessionToken:  session.SessionToken,
+		IdentityToken: session.IdentityToken,
+		ExpiresAt:     session.ExpiresAt,
 	}
-
-	subject, ok := middleware.GetSubjectFromContext(r.Context())
-	if !ok {
-		utils.WriteJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
-		return
-	}
-
-	session := h.userSessionService.GetSession(subject)
-	if session == nil {
-		utils.WriteJSON(w, http.StatusNotFound, map[string]string{"error": "no session"})
-		return
-	}
-
-	utils.WriteJSON(w, http.StatusOK, session)
-}
-
-// Delete deletes a session
-func (h *SessionHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	if h.isMultiUser() {
-		subject, ok := middleware.GetSubjectFromContext(r.Context())
-		if !ok {
-			utils.WriteJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
-			return
-		}
-		if err := h.userSessionService.DeleteSession(subject); err != nil {
-			log.Printf("failed to delete game session: %v", err)
-			utils.WriteJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-			return
-		}
-	} else {
-		token := r.URL.Query().Get("token")
-		if token == "" {
-			utils.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "token required"})
-			return
-		}
-		if err := h.sessionService.DeleteGameSession(token); err != nil {
-			log.Printf("failed to delete game session: %v", err)
-			utils.WriteJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-			return
-		}
-	}
-
-	utils.WriteJSON(w, http.StatusOK, map[string]string{"message": "deleted"})
-}
-
-// Refresh refreshes a session
-func (h *SessionHandler) Refresh(w http.ResponseWriter, r *http.Request) {
-	var session *client.GameSession
-	var err error
-
-	if h.isMultiUser() {
-		subject, ok := middleware.GetSubjectFromContext(r.Context())
-		if !ok {
-			utils.WriteJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
-			return
-		}
-		session, err = h.userSessionService.RefreshSession(subject)
-	} else {
-		token := r.URL.Query().Get("token")
-		if token == "" {
-			utils.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "token required"})
-			return
-		}
-		session, err = h.sessionService.RefreshGameSession(token)
-	}
-
-	if err != nil {
-		log.Printf("failed to refresh game session: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-		return
-	}
-
-	if session == nil {
-		utils.WriteJSON(w, http.StatusNotFound, map[string]string{"error": "no session"})
-		return
-	}
-
-	utils.WriteJSON(w, http.StatusOK, session)
 }

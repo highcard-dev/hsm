@@ -1,0 +1,9 @@
+# oapi-codegen configuration
+# See: https://github.com/oapi-codegen/oapi-codegen
+
+package: api
+output: api/api.gen.go
+generate:
+  std-http-server: true
+  models: true
+  embedded-spec: true

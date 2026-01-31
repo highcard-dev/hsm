@@ -1,0 +1,363 @@
+openapi: "3.0.3"
+info:
+  title: HSM - Hytale Server Manager API
+  version: "1.0.0"
+  description: API for managing Hytale game server sessions and downloads
+
+servers:
+  - url: /
+    description: Local server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Health check
+      description: Returns the health status and version of the service
+      security: [] # Public endpoint, no auth required
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /api/v1/session:
+    get:
+      operationId: getSession
+      summary: Get current session
+      description: Returns the current game session for the authenticated user (multi-user mode only)
+      tags:
+        - Session
+      responses:
+        "200":
+          description: Current session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameSession"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: No session found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "501":
+          description: Not available in single-user mode
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      operationId: createSession
+      summary: Create a new session
+      description: Creates a new game session
+      tags:
+        - Session
+      responses:
+        "200":
+          description: Session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameSession"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      operationId: deleteSession
+      summary: Delete a session
+      description: Deletes the current session. In single-user mode, requires token query parameter.
+      tags:
+        - Session
+      parameters:
+        - name: token
+          in: query
+          description: Session token (required in single-user mode)
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Session deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          description: Bad request (token required in single-user mode)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/session/refresh:
+    post:
+      operationId: refreshSession
+      summary: Refresh a session
+      description: Refreshes an existing game session. In single-user mode, requires token query parameter.
+      tags:
+        - Session
+      parameters:
+        - name: token
+          in: query
+          description: Session token (required in single-user mode)
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Session refreshed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameSession"
+        "400":
+          description: Bad request (token required in single-user mode)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: No session found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/download:
+    get:
+      operationId: getDownloadURL
+      summary: Get download URL
+      description: Returns the signed download URL and version for a patchline
+      tags:
+        - Download
+      parameters:
+        - name: patchline
+          in: query
+          description: Patchline to download (defaults to "release")
+          required: false
+          schema:
+            type: string
+            default: release
+      responses:
+        "200":
+          description: Download URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadResponse"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /game-session:
+    post:
+      operationId: createGameSessionEnv
+      summary: Create session (env format)
+      description: Creates a new game session and returns it in shell environment format
+      tags:
+        - Session
+      responses:
+        "200":
+          description: Session created in env format
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: |
+                  HYTALE_SERVER_SESSION_TOKEN="token_here"
+                  HYTALE_SERVER_IDENTITY_TOKEN="identity_here"
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+        "500":
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /download:
+    get:
+      operationId: getDownloadURLPlain
+      summary: Get download URL (plain text)
+      description: Returns the signed download URL as plain text
+      tags:
+        - Download
+      parameters:
+        - name: patchline
+          in: query
+          description: Patchline to download (defaults to "release")
+          required: false
+          schema:
+            type: string
+            default: release
+      responses:
+        "200":
+          description: Download URL
+          content:
+            text/plain:
+              schema:
+                type: string
+        "500":
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /version:
+    get:
+      operationId: getVersionPlain
+      summary: Get version (plain text)
+      description: Returns the latest version as plain text
+      tags:
+        - Download
+      parameters:
+        - name: patchline
+          in: query
+          description: Patchline to check (defaults to "release")
+          required: false
+          schema:
+            type: string
+            default: release
+      responses:
+        "200":
+          description: Version string
+          content:
+            text/plain:
+              schema:
+                type: string
+        "500":
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Bearer token authentication
+
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - version
+      properties:
+        status:
+          type: string
+          description: Health status
+          example: healthy
+        version:
+          type: string
+          description: Service version
+          example: "1.0.0"
+
+    GameSession:
+      type: object
+      required:
+        - sessionToken
+        - identityToken
+        - expiresAt
+      properties:
+        sessionToken:
+          type: string
+          description: Session token for the game server
+        identityToken:
+          type: string
+          description: Identity token for authentication
+        expiresAt:
+          type: string
+          format: date-time
+          description: Expiration time of the session
+
+    DownloadResponse:
+      type: object
+      required:
+        - url
+        - version
+      properties:
+        url:
+          type: string
+          description: Signed download URL
+        version:
+          type: string
+          description: Version of the download
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message
+
+    MessageResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Response message

@@ -1,4 +1,4 @@
-.PHONY: build clean run test fmt lint lint-install vet tidy hooks-install helm-install helm-upgrade helm-uninstall helm-package helm-lint
+.PHONY: build clean run test fmt lint lint-install vet tidy hooks-install helm-install helm-upgrade helm-uninstall helm-package helm-lint generate
 
 # Binary name
 BINARY_NAME=hsm
@@ -80,6 +80,10 @@ tidy:
 deps:
 	$(GOMOD) download
 
+# Generate code from OpenAPI spec
+generate:
+	$(GOCMD) tool oapi-codegen --config=api/oapi-codegen.yaml api/openapi.yaml
+
 # Install the binary
 install: build
 	cp $(BINARY_NAME) $(GOPATH)/bin/
@@ -133,6 +137,7 @@ help:
 	@echo "  lint-install - Install golangci-lint"
 	@echo "  tidy         - Tidy dependencies"
 	@echo "  deps         - Download dependencies"
+	@echo "  generate     - Generate code from OpenAPI spec"
 	@echo "  install      - Install binary to GOPATH/bin"
 	@echo ""
 	@echo "Helm targets:"
