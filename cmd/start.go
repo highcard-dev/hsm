@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"runtime"
 	"sync"
 	"syscall"
 
@@ -15,17 +16,6 @@ import (
 )
 
 var additionalArgs []string
-var additionalJavaArgs []string
-
-// hasFlag checks if a flag is present in the args slice
-func hasFlag(args []string, flag string) bool {
-	for _, arg := range args {
-		if arg == flag {
-			return true
-		}
-	}
-	return false
-}
 
 var startCmd = &cobra.Command{
 	Use:   "start",
@@ -49,25 +39,18 @@ var startCmd = &cobra.Command{
 
 		fmt.Println("Game session created successfully!")
 
-		// Build command args: Java args first, then -jar, then server args
-		var cmdArgs []string
-
-		// 1. Additional Java args (e.g., -Xmx4G, -XX:+UseG1GC)
-		cmdArgs = append(cmdArgs, additionalJavaArgs...)
-
-		// 2. -jar argument
-		if !hasFlag(additionalJavaArgs, "-jar") {
-			cmdArgs = append(cmdArgs, "-jar", "Server/HytaleServer.jar")
+		// Determine which launcher script to use based on OS
+		var serverCmd *exec.Cmd
+		if runtime.GOOS == "windows" {
+			// On Windows, use cmd.exe to run the batch file
+			cmdArgs := append([]string{"/c", "start.bat"}, additionalArgs...)
+			serverCmd = exec.Command("cmd.exe", cmdArgs...)
+		} else {
+			// On Unix (Linux, macOS), use bash to run the shell script
+			cmdArgs := append([]string{"./start.sh"}, additionalArgs...)
+			serverCmd = exec.Command("bash", cmdArgs...)
 		}
 
-		// 3. Server args (after -jar)
-		if !hasFlag(additionalArgs, "--assets") {
-			cmdArgs = append(cmdArgs, "--assets", "Assets.zip")
-		}
-		cmdArgs = append(cmdArgs, additionalArgs...)
-
-		// Create the command
-		serverCmd := exec.Command("java", cmdArgs...)
 		serverCmd.Stdout = os.Stdout
 		serverCmd.Stderr = os.Stderr
 		serverCmd.Stdin = os.Stdin
@@ -128,7 +111,6 @@ var startCmd = &cobra.Command{
 }
 
 func init() {
-	startCmd.Flags().StringArrayVar(&additionalJavaArgs, "additional-java-args", nil, "Additional Java arguments (e.g., --additional-java-args '-Xmx4G' --additional-java-args '-XX:+UseG1GC')")
-	startCmd.Flags().StringArrayVar(&additionalArgs, "additional-args", nil, "Additional arguments to pass to the server (can override defaults, e.g., --additional-args '--assets Custom.zip')")
+	startCmd.Flags().StringArrayVar(&additionalArgs, "additional-args", nil, "Additional arguments to pass to the server (passed through to start.sh/start.bat)")
 	rootCmd.AddCommand(startCmd)
 }

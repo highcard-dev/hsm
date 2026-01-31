@@ -14,3 +14,8 @@ logs/
 bin
 
 /values.yaml
+
+
+start.sh
+start.bat
+version.txt

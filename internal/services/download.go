@@ -59,33 +59,34 @@ func (s *DownloadService) GetLatestVersion(patchline string) (string, error) {
 }
 
 // GetDownloadURL fetches the signed download URL for a patchline
-func (s *DownloadService) GetDownloadURL(patchline string) (string, error) {
+func (s *DownloadService) GetDownloadURL(patchline string) (string, string, error) {
 	resultFileInfoUrl, err := s.client.GetSignedURL(fmt.Sprintf("version/%s.json", patchline))
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	resp, err := http.Get(resultFileInfoUrl.URL)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	var resultFileInfo struct {
 		DownloadURL string `json:"download_url"`
+		Version     string `json:"version"`
 	}
 	if err := json.Unmarshal(body, &resultFileInfo); err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	resultDownloadURL, err := s.client.GetSignedURL(resultFileInfo.DownloadURL)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	return resultDownloadURL.URL, nil
+	return resultDownloadURL.URL, resultFileInfo.Version, nil
 }

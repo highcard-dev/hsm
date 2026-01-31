@@ -30,10 +30,11 @@ var downloadCmd = &cobra.Command{
 		downloadService := services.NewDownloadService(sessionService.Client())
 
 		fmt.Printf("Fetching download URL for patchline: %s\n", patchline)
-		url, err := downloadService.GetDownloadURL(patchline)
+		url, version, err := downloadService.GetDownloadURL(patchline)
 		if err != nil {
 			return fmt.Errorf("failed to get download URL: %w", err)
 		}
+		fmt.Printf("Downloading version: %s\n", version)
 
 		if err := os.MkdirAll(outputDir, 0755); err != nil {
 			return fmt.Errorf("failed to create output directory: %w", err)

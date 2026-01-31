@@ -27,6 +27,19 @@
             "showLog": true
         },
         {
+            "name": "Debug update print",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "args": [
+                "update",
+                "--print-only"
+            ],
+            "env": {},
+            "showLog": true
+        },
+        {
             "name": "Debug download",
             "type": "go",
             "request": "launch",
@@ -35,6 +48,18 @@
             "args": [
                 "download",
                 "--session-location=./session.json"
+            ],
+            "env": {},
+            "showLog": true
+        },
+        {
+            "name": "Debug start",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "args": [
+                "start",
             ],
             "env": {},
             "showLog": true

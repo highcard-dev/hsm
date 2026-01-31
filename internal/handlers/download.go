@@ -37,13 +37,13 @@ func (h *DownloadHandler) GetDownloadURL(w http.ResponseWriter, r *http.Request)
 		patchline = services.PatchlineRelease
 	}
 
-	url, err := h.downloadService.GetDownloadURL(patchline)
+	url, version, err := h.downloadService.GetDownloadURL(patchline)
 	if err != nil {
 		utils.WriteJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, map[string]string{"url": url})
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"url": url, "version": version})
 }
 
 // GetVersionPlain returns the latest version as plain text
@@ -71,7 +71,7 @@ func (h *DownloadHandler) GetDownloadURLPlain(w http.ResponseWriter, r *http.Req
 		patchline = services.PatchlineRelease
 	}
 
-	url, err := h.downloadService.GetDownloadURL(patchline)
+	url, _, err := h.downloadService.GetDownloadURL(patchline)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
