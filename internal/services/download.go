@@ -13,8 +13,6 @@ import (
 const (
 	PatchlineRelease    = "release"
 	PatchlinePrerelease = "prerelease"
-
-	downloadBaseURLRelease = "https://downloader.hytale.com"
 )
 
 type DownloadService struct {
